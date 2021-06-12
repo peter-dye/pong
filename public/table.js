@@ -6,9 +6,9 @@ class Table extends React.Component {
 
   render() {
     return (
-      <h2>
-        This is a React component.
-      </h2>
+      <canvas>
+
+      </canvas>
     );
   }
 }
