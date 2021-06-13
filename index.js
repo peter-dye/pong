@@ -13,6 +13,14 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('New player connected.');
+
+  socket.on('moveUp', () => {
+    console.log('moveUp event detected.');
+  });
+
+  socket.on('moveDown', () => {
+    console.log('moveDown event detected.');
+  });
 });
 
 server.listen(3000, () => {
