@@ -16,6 +16,7 @@ io.on('connection', (socket) => {
 
   socket.on('moveUp', () => {
     console.log('moveUp event detected.');
+    socket.emit('ack', 'moveUp acknowledged');
   });
 
   socket.on('moveDown', () => {

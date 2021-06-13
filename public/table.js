@@ -4,7 +4,10 @@ class Table extends React.Component {
     super(props);
     this.socket = props.socket;
 
+    this.socket.on('ack', this.handleAck);
+
     this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleAck = this.handleAck.bind(this);
   }
 
   render() {
@@ -25,5 +28,9 @@ class Table extends React.Component {
     } else if (e.key == 's') {
       this.socket.emit('moveDown');
     }
+  }
+
+  handleAck(message) {
+    console.log(message);
   }
 }
