@@ -2,4 +2,4 @@
 var socket = io();
 
 // Render the pong table
-ReactDOM.render(<Screen socket={socket} />, document.getElementById('Screen'));
+ReactDOM.render(<Game socket={socket} />, document.getElementById('Game'));
