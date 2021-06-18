@@ -8,6 +8,7 @@ class Game extends React.Component {
     return (
       <div>
         <Username />
+        <Connect socket={this.socket} />
         <Table socket={this.socket} />
       </div>
     );
