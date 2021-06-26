@@ -1,7 +1,6 @@
 class Username extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {value: ''};
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -14,7 +13,7 @@ class Username extends React.Component {
           Username:
           <input
             type='text'
-            value={this.state.value}
+            value={this.props.username}
             onChange={this.handleChange}
           />
         </label>
@@ -24,11 +23,11 @@ class Username extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({value: event.target.value});
+    this.props.onChange(event.target.value);
   }
 
   handleSubmit(event) {
-    alert('Your username is ' + this.state.value);
+    this.props.onSubmit();
     event.preventDefault();
   }
 }

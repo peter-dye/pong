@@ -4,6 +4,9 @@
   "description": "Multiplayer arcade game pong",
   "dependencies": {
     "express": "^4.17.1",
-    "socket.io": "^4.1.2"
+    "randomstring": "^1.2.1",
+    "redis": "^3.1.2",
+    "socket.io": "^4.1.2",
+    "string": "^3.3.3"
   }
 }

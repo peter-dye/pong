@@ -4,10 +4,10 @@ class Table extends React.Component {
     super(props);
     this.socket = props.socket;
 
-    this.socket.on('ack', this.handleAck);
+    this.socket.on('move', this.handleMove);
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.handleAck = this.handleAck.bind(this);
+    this.handleMove = this.handleMove.bind(this);
   }
 
   render() {
@@ -23,14 +23,21 @@ class Table extends React.Component {
 
   handleKeyPress(e) {
     if (e.key == 'w') {
-      this.socket.emit('moveUp');
-      console.log('moveUp event emitted.');
+      var moveMessage = {
+        username: this.props.username,
+        move: 'moveUp'
+      }
     } else if (e.key == 's') {
-      this.socket.emit('moveDown');
+      var moveMessage = {
+        username: this.props.username,
+        move: 'moveDown'
+      }
     }
+    this.socket.emit('move', JSON.stringify(moveMessage));
   }
 
-  handleAck(message) {
+  handleMove(message) {
+    var message = JSON.parse(message);
     console.log(message);
   }
 }

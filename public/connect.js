@@ -7,8 +7,14 @@ class Connect extends React.Component {
   render() {
     return (
       <div>
-        <CreateGame socket={this.socket} />
-        <JoinGame socket={this.socket} />
+        <CreateGame
+          socket={this.socket}
+          username={this.props.username}
+        />
+        <JoinGame
+          socket={this.socket}
+          username={this.props.username}
+        />
       </div>
     );
   }
@@ -38,7 +44,7 @@ class CreateGame extends React.Component {
     this.socket.on('created', (code) => {
       this.setState({code: code});
     });
-    this.socket.emit('create');
+    this.socket.emit('create', this.props.username);
   }
 }
 
@@ -74,7 +80,11 @@ class JoinGame extends React.Component {
   }
 
   handleSubmit(event) {
-    consolge.log('Join a game with code ' + this.state.value);
+    var joinMessage = {
+      gameCode: this.state.value,
+      username: this.props.username
+    };
+    socket.emit('join', JSON.stringify(joinMessage));
     event.preventDefault();
   }
 }
