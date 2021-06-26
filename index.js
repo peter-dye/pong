@@ -17,8 +17,7 @@ io.on('connection', (socket) => {
   var rx;
 
   socket.on('create', (username) => {
-    // gameCode = randomstring.generate(5).toUpperCase();
-    gameCode = 'ABCDE';
+    gameCode = randomstring.generate(5).toUpperCase();
 
     tx = redis.createClient();
     rx = redis.createClient();
