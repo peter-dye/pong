@@ -10,9 +10,9 @@ class Table extends React.Component {
     this.handleMove = this.handleMove.bind(this);
 
     this.state = {
-      width: 300,
-      height: 150
-    }
+      createCenter: [15, this.props.height/2],
+      joinCenter: [this.props.width-15, this.props.height/2]
+    };
   }
 
   render() {
@@ -59,13 +59,15 @@ class Table extends React.Component {
   updateCanvas() {
     const ctx = this.refs.table.getContext('2d');
     this.drawBackground(ctx);
+    this.drawPaddle(ctx, this.state.createCenter);
+    this.drawPaddle(ctx, this.state.joinCenter);
   }
 
   drawBackground(ctx) {
-    var width = this.state.width;
-    var height = this.state.height;
+    var width = this.props.width;
+    var height = this.props.height;
 
-    ctx.fillStyle = 'rgb(0, 0, 200)';
+    ctx.fillStyle = 'rgb(102, 153, 255)';
     ctx.fillRect(0, 0, width, height);
 
     ctx.strokeStyle = 'white';
@@ -82,5 +84,18 @@ class Table extends React.Component {
     ctx.moveTo(width/2, 0);
     ctx.lineTo(width/2, height);
     ctx.stroke();
+  }
+
+  drawPaddle(ctx, center) {
+    var paddleWidth = 7;
+    var paddleHeight = 30;
+
+    ctx.fillStyle = 'rgb(255, 0, 0)';
+    ctx.fillRect(
+      center[0]-paddleWidth/2,
+      center[1]-paddleHeight/2,
+      paddleWidth,
+      paddleHeight
+    );
   }
 }

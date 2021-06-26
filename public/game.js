@@ -24,6 +24,8 @@ class Game extends React.Component {
         <Table
           socket={this.socket}
           username={this.state.username}
+          width={300}
+          height={150}
         />
       </div>
     );
