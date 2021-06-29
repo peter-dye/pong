@@ -10,10 +10,12 @@ class Connect extends React.Component {
         <CreateGame
           socket={this.socket}
           username={this.props.username}
+          setSide={this.props.setSide}
         />
         <JoinGame
           socket={this.socket}
           username={this.props.username}
+          setSide={this.props.setSide}
         />
       </div>
     );
@@ -45,6 +47,7 @@ class CreateGame extends React.Component {
       this.setState({code: code});
     });
     this.socket.emit('create', this.props.username);
+    this.props.setSide('left');
   }
 }
 
@@ -85,6 +88,7 @@ class JoinGame extends React.Component {
       username: this.props.username
     };
     socket.emit('join', JSON.stringify(joinMessage));
+    this.props.setSide('right');
     event.preventDefault();
   }
 }

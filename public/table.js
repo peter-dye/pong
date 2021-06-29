@@ -4,14 +4,14 @@ class Table extends React.Component {
     super(props);
     this.socket = props.socket;
 
-    this.socket.on('move', this.handleMove);
-
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handleMove = this.handleMove.bind(this);
 
+    this.socket.on('move', this.handleMove);
+
     this.state = {
-      createCenter: [15, this.props.height/2],
-      joinCenter: [this.props.width-15, this.props.height/2]
+      leftCenter: [15, this.props.height/2],
+      rightCenter: [this.props.width-15, this.props.height/2]
     };
   }
 
@@ -21,8 +21,8 @@ class Table extends React.Component {
         ref='table'
         tabIndex='1'
         onKeyPress={this.handleKeyPress}
-        width={this.state.width}
-        height={this.state.height}
+        width={this.props.width}
+        height={this.props.height}
       >
       </canvas>
     );
@@ -53,14 +53,55 @@ class Table extends React.Component {
 
   handleMove(message) {
     var message = JSON.parse(message);
-    console.log(message);
+    if (message.move === 'moveUp') {
+      var delta = -5;
+    } else {
+      var delta = 5;
+    }
+    if (this.props.username === message.username) {
+      if (this.props.side === 'left') {
+        this.updateLeft(delta);
+      } else {
+        this.updateRight(delta);
+      }
+    } else {
+      if (this.props.side === 'left') {
+        this.updateRight(delta);
+      } else {
+        this.updateLeft(delta);
+      }
+    }
+  }
+
+  updateLeft(delta) {
+    this.setState((state) => {
+      return {
+        ...state,
+        leftCenter: [
+          state.leftCenter[0],
+          state.leftCenter[1]+delta
+        ]
+      }
+    });
+  }
+
+  updateRight(delta) {
+    this.setState((state) => {
+      return {
+        ...state,
+        rightCenter: [
+          state.rightCenter[0],
+          state.rightCenter[1]+delta
+        ]
+      }
+    });
   }
 
   updateCanvas() {
     const ctx = this.refs.table.getContext('2d');
     this.drawBackground(ctx);
-    this.drawPaddle(ctx, this.state.createCenter);
-    this.drawPaddle(ctx, this.state.joinCenter);
+    this.drawPaddle(ctx, this.state.leftCenter);
+    this.drawPaddle(ctx, this.state.rightCenter);
   }
 
   drawBackground(ctx) {
@@ -90,7 +131,7 @@ class Table extends React.Component {
     var paddleWidth = 7;
     var paddleHeight = 30;
 
-    ctx.fillStyle = 'rgb(255, 0, 0)';
+    ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(
       center[0]-paddleWidth/2,
       center[1]-paddleHeight/2,

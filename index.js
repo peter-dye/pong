@@ -26,7 +26,7 @@ io.on('connection', (socket) => {
     rx.on('message', (channel, message) => {
       var message = JSON.parse(message);
       if (message.type === 'username') {
-
+        // do something with the username here
       } else if (message.type === 'move') {
         var moveMessage = {username: message.username, move: message.move};
         socket.emit(message.type, JSON.stringify(moveMessage));
@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
     rx.on('message', (channel, message) => {
       var message = JSON.parse(message);
       if (message.type === 'username') {
-
+        // do something with the username here
       } else if (message.type === 'move') {
         var moveMessage = {username: message.username, move: message.move};
         socket.emit(message.type, JSON.stringify(moveMessage));
