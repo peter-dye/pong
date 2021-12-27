@@ -5,13 +5,18 @@ class Table extends React.Component {
     this.socket = props.socket;
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.handleMove = this.handleMove.bind(this);
+    this.handlePing = this.handlePing.bind(this);
 
-    this.socket.on('move', this.handleMove);
+    this.socket.on('ping', this.handlePing);
 
+    var paddleIndent = 15;
     this.state = {
-      leftCenter: [15, this.props.height/2],
-      rightCenter: [this.props.width-15, this.props.height/2]
+      leftLocationX: paddleIndent,
+      rightLocationX: this.props.width-paddleIndent,
+      leftLocationY: 0,
+      rightLocationY: 0,
+      ballLocation: [this.props.width/2, this.props.height/2],
+      moveRequest: 'none'
     };
   }
 
@@ -38,75 +43,50 @@ class Table extends React.Component {
 
   handleKeyPress(e) {
     if (e.key == 'w') {
-      var moveMessage = {
-        username: this.props.username,
-        move: 'moveUp'
-      }
+        this.setState((state) => {
+          return {...state, moveRequest: 'up'};
+        });
     } else if (e.key == 's') {
-      var moveMessage = {
-        username: this.props.username,
-        move: 'moveDown'
-      }
+      this.setState((state) => {
+        return {...state, moveRequest: 'down'};
+      });
     }
-    this.socket.emit('move', JSON.stringify(moveMessage));
   }
 
-  handleMove(message) {
+  handlePing(message) {
     var message = JSON.parse(message);
-    if (message.move === 'moveUp') {
-      var delta = -5;
-    } else {
-      var delta = 5;
-    }
-    if (this.props.username === message.username) {
-      if (this.props.side === 'left') {
-        this.updateLeft(delta);
-      } else {
-        this.updateRight(delta);
-      }
-    } else {
-      if (this.props.side === 'left') {
-        this.updateRight(delta);
-      } else {
-        this.updateLeft(delta);
-      }
-    }
-  }
 
-  updateLeft(delta) {
+    // update the paddle locations with the information from the ping
+    // update the ball location with the information from the ping
     this.setState((state) => {
       return {
         ...state,
-        leftCenter: [
-          state.leftCenter[0],
-          state.leftCenter[1]+delta
-        ]
-      }
+        leftLocationY: message.leftLocationY,
+        rightLocationY: message.rightLocationY,
+        ballLocation: message.ballLocation
+      };
     });
-  }
 
-  updateRight(delta) {
-    this.setState((state) => {
-      return {
-        ...state,
-        rightCenter: [
-          state.rightCenter[0],
-          state.rightCenter[1]+delta
-        ]
-      }
-    });
+    // send a ping response with the move request
+    var pingResponse = {
+      side: this.props.side,
+      moveRequest: this.state.moveRequest
+    };
+    socket.emit('pingResponse', JSON.stringify(pingResponse));
+    this.state.moveRequest = 'none';
   }
 
   updateCanvas() {
     const ctx = this.refs.table.getContext('2d');
     this.drawBackground(ctx);
-    this.drawPaddle(ctx, this.state.leftCenter);
-    this.drawPaddle(ctx, this.state.rightCenter);
+    this.drawPaddle(ctx, [this.state.leftLocationX, this.state.leftLocationY]);
+    this.drawPaddle(ctx, [this.state.rightLocationX, this.state.rightLocationY]);
+    this.drawBall(ctx, this.state.ballLocation);
   }
 
   drawBackground(ctx) {
-    var width = this.props.width;
-    var height = this.props.height;
+    let width = this.props.width;
+    let height = this.props.height;
 
     ctx.fillStyle = 'rgb(102, 153, 255)';
     ctx.fillRect(0, 0, width, height);
@@ -128,8 +108,8 @@ class Table extends React.Component {
   }
 
   drawPaddle(ctx, center) {
-    var paddleWidth = 7;
-    var paddleHeight = 30;
+    let paddleWidth = 7;
+    let paddleHeight = 30;
 
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(
@@ -138,5 +118,14 @@ class Table extends React.Component {
       paddleWidth,
       paddleHeight
     );
+  }
+
+  drawBall(ctx, center) {
+    let radius = 3;
+
+    ctx.beginPath();
+    ctx.arc(center[0], center[1], radius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
   }
 }
