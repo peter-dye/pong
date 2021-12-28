@@ -152,37 +152,24 @@ io.on('connection', (socket) => {
     // If the ball is contacting the left paddle.
     if (contactingLeftPaddle(gameData.leftLocationY, ballLocation, ballVelocity)) {
       ballVelocity = getPaddleBounceVelocity(gameData.leftLocationY, ballLocation);
-
-      ballLocation[0] = ballLocation[0] + ballVelocity[0];
-      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     // Else if the ball is contacting the right paddle.
     else if (contactingRightPaddle(gameData.rightLocationY, ballLocation, ballVelocity)) {
       ballVelocity = getPaddleBounceVelocity(gameData.rightLocationY, ballLocation);
       ballVelocity[0] = -1 * ballVelocity[0];
-
-      ballLocation[0] = ballLocation[0] + ballVelocity[0];
-      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     // Else if the ball is contacting the top or bottom side.
     else if (contactingTop(ballLocation, ballVelocity)) {
       // Does not change the magnitude.
       ballVelocity[1] = -1 * ballVelocity[1];
-
-      ballLocation[0] = ballLocation[0] + ballVelocity[0];
-      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     else if (contactingBottom(ballLocation, ballVelocity)) {
       ballVelocity[1] = -1 * ballVelocity[1];
-
-      ballLocation[0] = ballLocation[0] + ballVelocity[0];
-      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     // Else if goal for left player.
     else if (leftGoal(ballLocation, ballVelocity)) {
-      console.log('Left goal.');
       gameData.leftScore += 1;
-      ballLocation = [tableWidth/2, tableHeight/2];
+      ballLocation = [tableWidth/2 - ballVelocityMagnitude, tableHeight/2];
       ballVelocity = [ballVelocityMagnitude, 0];
 
       clearInterval(interval);
@@ -190,14 +177,16 @@ io.on('connection', (socket) => {
     }
     // Else if goal for right player.
     else if (rightGoal(ballLocation, ballVelocity)) {
-      console.log('Right goal.')
       gameData.rightScore += 1;
-      ballLocation = [tableWidth/2, tableHeight/2];
+      ballLocation = [tableWidth/2 + ballVelocityMagnitude, tableHeight/2];
       ballVelocity = [-ballVelocityMagnitude, 0];
 
       clearInterval(interval);
-      setTimeout(startGameLoop, 3000);
+      setTimeout(startGameLoop, 1000);
     }
+
+    ballLocation[0] = ballLocation[0] + ballVelocity[0];
+    ballLocation[1] = ballLocation[1] + ballVelocity[1];
 
     gameData.ballLocation = ballLocation;
     gameData.ballVelocity = ballVelocity;
