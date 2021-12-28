@@ -13,11 +13,12 @@ class Table extends React.Component {
     this.state = {
       leftLocationX: paddleIndent,
       rightLocationX: this.props.width-paddleIndent,
-      leftLocationY: 0,
-      rightLocationY: 0,
+      leftLocationY: this.props.height/2,
+      rightLocationY: this.props.height/2,
       ballLocation: [this.props.width/2, this.props.height/2],
-      moveRequest: 'none'
     };
+
+    this.moveRequest = 'none';
   }
 
   render() {
@@ -43,13 +44,9 @@ class Table extends React.Component {
 
   handleKeyPress(e) {
     if (e.key == 'w') {
-        this.setState((state) => {
-          return {...state, moveRequest: 'up'};
-        });
+      this.moveRequest = 'up';
     } else if (e.key == 's') {
-      this.setState((state) => {
-        return {...state, moveRequest: 'down'};
-      });
+      this.moveRequest = 'down';
     }
   }
 
@@ -70,10 +67,10 @@ class Table extends React.Component {
     // send a ping response with the move request
     var pingResponse = {
       side: this.props.side,
-      moveRequest: this.state.moveRequest
+      moveRequest: this.moveRequest
     };
     socket.emit('pingResponse', JSON.stringify(pingResponse));
-    this.state.moveRequest = 'none';
+    this.moveRequest = 'none';
   }
 
   updateCanvas() {
@@ -108,7 +105,7 @@ class Table extends React.Component {
   }
 
   drawPaddle(ctx, center) {
-    let paddleWidth = 7;
+    let paddleWidth = 6;
     let paddleHeight = 30;
 
     ctx.fillStyle = 'rgb(0, 0, 0)';
@@ -123,6 +120,7 @@ class Table extends React.Component {
   drawBall(ctx, center) {
     let radius = 3;
 
+    ctx.strokeStyle = 'rgb(0, 0, 0)';
     ctx.beginPath();
     ctx.arc(center[0], center[1], radius, 0, 2 * Math.PI);
     ctx.fill();

@@ -9,7 +9,13 @@ const redis = require('redis');
 const util = require('util');
 
 const paddleVelocity = 2;
-const ballVelocity = 3;
+const ballVelocityMagnitude = 3;
+const ballRadius = 3;
+const paddleIndent = 15;
+const paddleWidth = 6;
+const paddleHeight = 30;
+const tableWidth = 300;
+const tableHeight = 150;
 
 app.use(express.static('public'));
 
@@ -30,7 +36,7 @@ io.on('connection', (socket) => {
 
     rx.subscribe(gameCode);
     rx.on('message', async (channel, channelMessage) => {
-      var channelMessage = JSON.parse(channelMessage);
+      channelMessage = JSON.parse(channelMessage);
       if (channelMessage.type === 'ping') {
         sendPing();
       }
@@ -44,12 +50,13 @@ io.on('connection', (socket) => {
       }
     });
 
-    var gameData = {
+    let gameData = {
       leftName: username,
       rightName: "",
-      leftLocationY: 0,
-      rightLocationY: 0,
-      ballLocation: [0, 0]
+      leftLocationY: tableHeight/2,
+      rightLocationY: tableHeight/2,
+      ballLocation: [tableWidth/2, tableHeight/2],
+      ballVelocity: [-ballVelocityMagnitude, 0]
     };
 
     redisClient = createRedisClient();
@@ -60,8 +67,7 @@ io.on('connection', (socket) => {
 
 
   socket.on('join', async (message) => {
-    var message = JSON.parse(message);
-
+    message = JSON.parse(message);
     gameCode = message.gameCode;
 
     // check that the game code exists
@@ -81,13 +87,13 @@ io.on('connection', (socket) => {
 
     rx.subscribe(gameCode);
     rx.on('message', (channel, channelMessage) => {
-      var channelMessage = JSON.parse(channelMessage);
+      channelMessage = JSON.parse(channelMessage);
       if (channelMessage.type === 'ping') {
         sendPing();
       }
     });
 
-    var joinedMessage = {type: 'joined', username: message.username};
+    let joinedMessage = {type: 'joined', username: message.username};
     tx.publish(gameCode, JSON.stringify(joinedMessage));
 
     // send the creators username to the joiner
@@ -96,33 +102,21 @@ io.on('connection', (socket) => {
 
 
   socket.on('pingResponse', async (response) => {
-    var response = JSON.parse(response);
+    response = JSON.parse(response);
     let rawGameData = await redisClient.get(gameCode);
-    var gameData = JSON.parse(rawGameData);
+    let gameData = JSON.parse(rawGameData);
 
     if (response.side === 'left') {
       if (response.moveRequest === 'up') {
-        gameData = {
-          ...gameData,
-          leftLocationY: gameData.leftLocationY - paddleVelocity
-        };
+        gameData.leftLocationY = gameData.leftLocationY - paddleVelocity;
       } else if (response.moveRequest === 'down') {
-        gameData = {
-          ...gameData,
-          leftLocationY: gameData.leftLocationY + paddleVelocity
-        };
+        gameData.leftLocationY = gameData.leftLocationY + paddleVelocity;
       }
     } else if (response.side === 'right') {
       if (response.moveRequest === 'up') {
-        gameData = {
-          ...gameData,
-          rightLocationY: gameData.rightLocationY - paddleVelocity
-        };
+        gameData.rightLocationY = gameData.rightLocationY - paddleVelocity;
       } else if (response.moveRequest === 'down') {
-        gameData = {
-          ...gameData,
-          rightLocationY: gameData.rightLocationY + paddleVelocity
-        };
+        gameData.rightLocationY = gameData.rightLocationY + paddleVelocity;
       }
     }
 
@@ -151,21 +145,89 @@ io.on('connection', (socket) => {
 
   async function computeBallLocation() {
     let rawGameData = await redisClient.get(gameCode);
-    var gameData = JSON.parse(rawGameData);
+    let gameData = JSON.parse(rawGameData);
 
-    gameData.ballLocation[1] = gameData.ballLocation[1] + ballVelocity;
+    let ballLocation = gameData.ballLocation;
+    let ballVelocity = gameData.ballVelocity;
+
+    // If the ball is contacting the left paddle.
+    if (contactingLeftPaddle(gameData.leftLocationY, ballLocation, ballVelocity)) {
+      ballVelocity = getPaddleBounceVelocity(gameData.leftLocationY, ballLocation);
+    }
+    // Else if the ball is contacting the right paddle.
+    else if (contactingRightPaddle(gameData.rightLocationY, ballLocation, ballVelocity)) {
+      ballVelocity = getPaddleBounceVelocity(gameData.rightLocationY, ballLocation);
+      ballVelocity[0] = -1 * ballVelocity[0];
+    }
+    // Else if the ball is contacting the top or bottom side.
+    else if (contactingTop(ballLocation, ballVelocity)) {
+      // Does not change the magnitude.
+      ballVelocity[1] = -1 * ballVelocity[1];
+    }
+    else if (contactingBottom(ballLocation, ballVelocity)) {
+      ballVelocity[1] = -1 * ballVelocity[1];
+    }
+    // Else if goal for right.
+    // Else if goal for left.
+
+    ballLocation[0] = ballLocation[0] + ballVelocity[0];
+    ballLocation[1] = ballLocation[1] + ballVelocity[1];
+
+    gameData.ballLocation = ballLocation;
+    gameData.ballVelocity = ballVelocity;
 
     await redisClient.set(gameCode, JSON.stringify(gameData));
   }
 });
 
 function createRedisClient() {
-  var client = redis.createClient();
+  let client = redis.createClient();
   client.get = util.promisify(client.get);
   client.set = util.promisify(client.set);
   return client;
 }
 
+function contactingLeftPaddle(paddleLocation, ballLocation, ballVelocity) {
+  return ballLocation[0] < (paddleIndent + paddleWidth/2 + ballRadius)
+    && ballLocation[0] > paddleIndent
+    && Math.abs(ballLocation[1] - paddleLocation) < (paddleHeight/2)
+    && ballVelocity[0] < 0;
+}
+
+function contactingRightPaddle(paddleLocation, ballLocation, ballVelocity) {
+  return ballLocation[0] > (tableWidth - (paddleIndent + paddleWidth/2 + ballRadius))
+    && ballLocation[0] < (tableWidth - paddleIndent)
+    && Math.abs(ballLocation[1] - paddleLocation) < (paddleHeight/2)
+    && ballVelocity[0] > 0;
+}
+
+function contactingTop(ballLocation, ballVelocity) {
+  return ballLocation[1] < ballRadius
+    && ballVelocity[1] < 0;
+}
+
+function contactingBottom(ballLocation, ballVelocity) {
+  return ballLocation[1] > (tableHeight - ballRadius)
+    && ballVelocity[1] > 0;
+}
+
+function getPaddleBounceVelocity(paddleLocation, ballLocation) {
+  let offset = paddleLocation - ballLocation[1];
+
+  // Map the offset from a range of 0 to paddleHeight/2, to a range
+  // of 0 to 80 degrees. Negative if needed.
+  const maxAngle = 80;
+  let angle = degToRad((offset/(paddleHeight/2)) * maxAngle);
+
+  return [
+    ballVelocityMagnitude * Math.cos(angle),
+    -1 * ballVelocityMagnitude * Math.sin(angle)
+  ];
+}
+
+function degToRad(deg) {
+    return deg * (Math.PI / 180.0);
+}
 
 server.listen(3000, () => {
   console.log('Listening on *:3000');
