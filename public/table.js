@@ -16,6 +16,8 @@ class Table extends React.Component {
       leftLocationY: this.props.height/2,
       rightLocationY: this.props.height/2,
       ballLocation: [this.props.width/2, this.props.height/2],
+      leftScore: 0,
+      rightScore: 0
     };
 
     this.moveRequest = 'none';
@@ -23,14 +25,26 @@ class Table extends React.Component {
 
   render() {
     return (
-      <canvas
-        ref='table'
-        tabIndex='1'
-        onKeyPress={this.handleKeyPress}
-        width={this.props.width}
-        height={this.props.height}
-      >
-      </canvas>
+      <table>
+        <tbody>
+          <tr>
+            <td>Score: {this.state.leftScore}</td>
+            <td style={{textAlign: "right"}}>Score: {this.state.rightScore}</td>
+          </tr>
+          <tr>
+            <td colSpan="2" style={{textAlign: "center"}}>
+              <canvas
+                ref='table'
+                tabIndex='1'
+                onKeyPress={this.handleKeyPress}
+                width={this.props.width}
+                height={this.props.height}
+              >
+              </canvas>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     );
   }
 
@@ -60,7 +74,9 @@ class Table extends React.Component {
         ...state,
         leftLocationY: message.leftLocationY,
         rightLocationY: message.rightLocationY,
-        ballLocation: message.ballLocation
+        ballLocation: message.ballLocation,
+        leftScore: message.leftScore,
+        rightScore: message.rightScore,
       };
     });
 

@@ -26,7 +26,7 @@ io.on('connection', (socket) => {
   var rx;
   var gameCode;
   var redisClient;
-
+  var interval;
 
   socket.on('create', async (username) => {
     gameCode = randomstring.generate(5).toUpperCase();
@@ -56,7 +56,9 @@ io.on('connection', (socket) => {
       leftLocationY: tableHeight/2,
       rightLocationY: tableHeight/2,
       ballLocation: [tableWidth/2, tableHeight/2],
-      ballVelocity: [-ballVelocityMagnitude, 0]
+      ballVelocity: [-ballVelocityMagnitude, 0],
+      leftScore: 0,
+      rightScore: 0
     };
 
     redisClient = createRedisClient();
@@ -125,25 +127,22 @@ io.on('connection', (socket) => {
 
 
   function startGameLoop() {
-    setInterval(sendPingSignal, 1000/30);
+    interval = setInterval(sendPingSignal, 1000/30);
   }
 
 
   function sendPingSignal () {
+    updateGame();
     tx.publish(gameCode, JSON.stringify({type: 'ping'}));
   }
 
 
   async function sendPing() {
-    // message needs to include both paddle locations and ball location
-    // ball location is computed here including bouncing off paddles and sides
-    computeBallLocation();
-
     socket.emit('ping', await redisClient.get(gameCode));
   }
 
 
-  async function computeBallLocation() {
+  async function updateGame() {
     let rawGameData = await redisClient.get(gameCode);
     let gameData = JSON.parse(rawGameData);
 
@@ -153,25 +152,52 @@ io.on('connection', (socket) => {
     // If the ball is contacting the left paddle.
     if (contactingLeftPaddle(gameData.leftLocationY, ballLocation, ballVelocity)) {
       ballVelocity = getPaddleBounceVelocity(gameData.leftLocationY, ballLocation);
+
+      ballLocation[0] = ballLocation[0] + ballVelocity[0];
+      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     // Else if the ball is contacting the right paddle.
     else if (contactingRightPaddle(gameData.rightLocationY, ballLocation, ballVelocity)) {
       ballVelocity = getPaddleBounceVelocity(gameData.rightLocationY, ballLocation);
       ballVelocity[0] = -1 * ballVelocity[0];
+
+      ballLocation[0] = ballLocation[0] + ballVelocity[0];
+      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     // Else if the ball is contacting the top or bottom side.
     else if (contactingTop(ballLocation, ballVelocity)) {
       // Does not change the magnitude.
       ballVelocity[1] = -1 * ballVelocity[1];
+
+      ballLocation[0] = ballLocation[0] + ballVelocity[0];
+      ballLocation[1] = ballLocation[1] + ballVelocity[1];
     }
     else if (contactingBottom(ballLocation, ballVelocity)) {
       ballVelocity[1] = -1 * ballVelocity[1];
-    }
-    // Else if goal for right.
-    // Else if goal for left.
 
-    ballLocation[0] = ballLocation[0] + ballVelocity[0];
-    ballLocation[1] = ballLocation[1] + ballVelocity[1];
+      ballLocation[0] = ballLocation[0] + ballVelocity[0];
+      ballLocation[1] = ballLocation[1] + ballVelocity[1];
+    }
+    // Else if goal for left player.
+    else if (leftGoal(ballLocation, ballVelocity)) {
+      console.log('Left goal.');
+      gameData.leftScore += 1;
+      ballLocation = [tableWidth/2, tableHeight/2];
+      ballVelocity = [ballVelocityMagnitude, 0];
+
+      clearInterval(interval);
+      setTimeout(startGameLoop, 3000);
+    }
+    // Else if goal for right player.
+    else if (rightGoal(ballLocation, ballVelocity)) {
+      console.log('Right goal.')
+      gameData.rightScore += 1;
+      ballLocation = [tableWidth/2, tableHeight/2];
+      ballVelocity = [-ballVelocityMagnitude, 0];
+
+      clearInterval(interval);
+      setTimeout(startGameLoop, 3000);
+    }
 
     gameData.ballLocation = ballLocation;
     gameData.ballVelocity = ballVelocity;
@@ -209,6 +235,18 @@ function contactingTop(ballLocation, ballVelocity) {
 function contactingBottom(ballLocation, ballVelocity) {
   return ballLocation[1] > (tableHeight - ballRadius)
     && ballVelocity[1] > 0;
+}
+
+function rightGoal(ballLocation, ballVelocity) {
+  // Right goal if contacting left edge.
+  return ballLocation[0] < ballRadius
+    && ballVelocity[0] < 0;
+}
+
+function leftGoal(ballLocation, ballVelocity) {
+  // Left goal if contacting right edge.
+  return ballLocation[0] > (tableWidth - ballRadius)
+    && ballVelocity[0] > 0;
 }
 
 function getPaddleBounceVelocity(paddleLocation, ballLocation) {
