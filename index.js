@@ -26,7 +26,6 @@ io.on('connection', (socket) => {
   var rx;
   var gameCode;
   var redisClient;
-  var interval;
 
   socket.on('create', async (username) => {
     gameCode = randomstring.generate(5).toUpperCase();
@@ -58,7 +57,8 @@ io.on('connection', (socket) => {
       ballLocation: [tableWidth/2, tableHeight/2],
       ballVelocity: [-ballVelocityMagnitude, 0],
       leftScore: 0,
-      rightScore: 0
+      rightScore: 0,
+      pausingAfterGoal: false,
     };
 
     redisClient = createRedisClient();
@@ -131,6 +131,16 @@ io.on('connection', (socket) => {
   }
 
 
+  async function unpause() {
+    let rawGameData = await redisClient.get(gameCode);
+    let gameData = JSON.parse(rawGameData);
+
+    gameData.pausingAfterGoal = false;
+
+    await redisClient.set(gameCode, JSON.stringify(gameData));
+  }
+
+
   function sendPingSignal () {
     updateGame();
     tx.publish(gameCode, JSON.stringify({type: 'ping'}));
@@ -172,8 +182,8 @@ io.on('connection', (socket) => {
       ballLocation = [tableWidth/2 - ballVelocityMagnitude, tableHeight/2];
       ballVelocity = [ballVelocityMagnitude, 0];
 
-      clearInterval(interval);
-      setTimeout(startGameLoop, 3000);
+      gameData.pausingAfterGoal = true;
+      setTimeout(unpause, 1000);
     }
     // Else if goal for right player.
     else if (rightGoal(ballLocation, ballVelocity)) {
@@ -181,12 +191,14 @@ io.on('connection', (socket) => {
       ballLocation = [tableWidth/2 + ballVelocityMagnitude, tableHeight/2];
       ballVelocity = [-ballVelocityMagnitude, 0];
 
-      clearInterval(interval);
-      setTimeout(startGameLoop, 1000);
+      gameData.pausingAfterGoal = true;
+      setTimeout(unpause, 1000);
     }
 
-    ballLocation[0] = ballLocation[0] + ballVelocity[0];
-    ballLocation[1] = ballLocation[1] + ballVelocity[1];
+    if (!gameData.pausingAfterGoal) {
+      ballLocation[0] = ballLocation[0] + ballVelocity[0];
+      ballLocation[1] = ballLocation[1] + ballVelocity[1];
+    }
 
     gameData.ballLocation = ballLocation;
     gameData.ballVelocity = ballVelocity;
