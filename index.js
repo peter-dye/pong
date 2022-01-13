@@ -5,8 +5,6 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server);
 const randomstring = require('randomstring');
-const redis = require('redis');
-const util = require('util');
 
 const paddleVelocity = 2;
 const ballVelocityMagnitude = 3;
@@ -19,94 +17,69 @@ const tableHeight = 150;
 
 app.use(express.static('public'));
 
+// Setup the Connection Queue dictionary. Shared between all connections.
+var connectionQueue = {};
+
 io.on('connection', (socket) => {
   console.log('New player connected.');
 
-  var tx;
-  var rx;
   var gameCode;
-  var redisClient;
+
+  var creatorSocket;
+  var joinerSocket;
+
+  let gameData = {
+    leftName: "",
+    rightName: "",
+    leftLocationY: tableHeight/2,
+    rightLocationY: tableHeight/2,
+    ballLocation: [tableWidth/2, tableHeight/2],
+    ballVelocity: [-ballVelocityMagnitude, 0],
+    leftScore: 0,
+    rightScore: 0,
+    pausingAfterGoal: false,
+  };
 
   socket.on('create', async (username) => {
+    creatorSocket = socket;
+    creatorSocket.on('pingResponse', (response) => {handlePingResponse(response)});
+
     gameCode = randomstring.generate(5).toUpperCase();
 
-    tx = redis.createClient();
-    rx = redis.createClient();
+    gameData.leftName = username;
 
-    rx.subscribe(gameCode);
-    rx.on('message', async (channel, channelMessage) => {
-      channelMessage = JSON.parse(channelMessage);
-      if (channelMessage.type === 'ping') {
-        sendPing();
-      }
-      else if (channelMessage.type === 'joined') {
-        // send the joiners username to the creator
-        let rawGameData = await redisClient.get(gameCode);
-        let gameData = JSON.parse(rawGameData);
-        socket.emit('oponentUsername', gameData.rightName);
+    // Define a function for the joiner to use to join.
+    function join(jUsername, jSocket) {
+      joinerSocket = jSocket;
+      joinerSocket.on('pingResponse', (response) => {handlePingResponse(response)});
+      gameData.rightName = jUsername;
 
-        startGameLoop();
-      }
-    });
+      // Send username messages.
+      creatorSocket.emit('opponentUsername', gameData.rightName);
+      joinerSocket.emit('opponentUsername', gameData.leftName);
 
-    let gameData = {
-      leftName: username,
-      rightName: "",
-      leftLocationY: tableHeight/2,
-      rightLocationY: tableHeight/2,
-      ballLocation: [tableWidth/2, tableHeight/2],
-      ballVelocity: [-ballVelocityMagnitude, 0],
-      leftScore: 0,
-      rightScore: 0,
-      pausingAfterGoal: false,
-    };
+      startGameLoop();
+    }
 
-    redisClient = createRedisClient();
-    await redisClient.set(gameCode, JSON.stringify(gameData));
+    // Add the function for the joiner to join to the connection queue.
+    connectionQueue[gameCode] = join;
 
-    socket.emit('created', gameCode);
+    creatorSocket.emit('created', gameCode);
   });
 
 
   socket.on('join', async (message) => {
     message = JSON.parse(message);
-    gameCode = message.gameCode;
 
-    // check that the game code exists
+    // Check that the game code exists.
 
-    // add the joiners username to the game data
-    redisClient = createRedisClient();
-    let rawGameData = await redisClient.get(gameCode);
-    let gameData = JSON.parse(rawGameData);
-    gameData = {
-      ...gameData,
-      rightName: message.username
-    };
-    await redisClient.set(gameCode, JSON.stringify(gameData));
-
-    tx = redis.createClient();
-    rx = redis.createClient();
-
-    rx.subscribe(gameCode);
-    rx.on('message', (channel, channelMessage) => {
-      channelMessage = JSON.parse(channelMessage);
-      if (channelMessage.type === 'ping') {
-        sendPing();
-      }
-    });
-
-    let joinedMessage = {type: 'joined', username: message.username};
-    tx.publish(gameCode, JSON.stringify(joinedMessage));
-
-    // send the creators username to the joiner
-    socket.emit('oponentUsername', gameData.leftName);
+    // Use the gameCode the get the join function.
+    var join = connectionQueue[message.gameCode];
+    join(message.username, socket);
   });
 
-
-  socket.on('pingResponse', async (response) => {
+  function handlePingResponse(response) {
     response = JSON.parse(response);
-    let rawGameData = await redisClient.get(gameCode);
-    let gameData = JSON.parse(rawGameData);
 
     if (response.side === 'left') {
       if (response.moveRequest === 'up') {
@@ -121,41 +94,33 @@ io.on('connection', (socket) => {
         gameData.rightLocationY = gameData.rightLocationY + paddleVelocity;
       }
     }
-
-    await redisClient.set(gameCode, JSON.stringify(gameData));
-  });
+  }
 
 
   function startGameLoop() {
-    interval = setInterval(sendPingSignal, 1000/30);
+    interval = setInterval(sendPingSignal, 1000/30); // 30 frames per second.
   }
 
 
   async function unpause() {
-    let rawGameData = await redisClient.get(gameCode);
-    let gameData = JSON.parse(rawGameData);
-
     gameData.pausingAfterGoal = false;
-
-    await redisClient.set(gameCode, JSON.stringify(gameData));
   }
 
 
   function sendPingSignal () {
     updateGame();
-    tx.publish(gameCode, JSON.stringify({type: 'ping'}));
+    sendPing();
   }
 
 
   async function sendPing() {
-    socket.emit('ping', await redisClient.get(gameCode));
+    let gameDataMessage = JSON.stringify(gameData);
+    creatorSocket.emit('ping', gameDataMessage);
+    joinerSocket.emit('ping', gameDataMessage);
   }
 
 
   async function updateGame() {
-    let rawGameData = await redisClient.get(gameCode);
-    let gameData = JSON.parse(rawGameData);
-
     let ballLocation = gameData.ballLocation;
     let ballVelocity = gameData.ballVelocity;
 
@@ -202,17 +167,8 @@ io.on('connection', (socket) => {
 
     gameData.ballLocation = ballLocation;
     gameData.ballVelocity = ballVelocity;
-
-    await redisClient.set(gameCode, JSON.stringify(gameData));
   }
 });
-
-function createRedisClient() {
-  let client = redis.createClient();
-  client.get = util.promisify(client.get);
-  client.set = util.promisify(client.set);
-  return client;
-}
 
 function contactingLeftPaddle(paddleLocation, ballLocation, ballVelocity) {
   return ballLocation[0] < (paddleIndent + paddleWidth/2 + ballRadius)
