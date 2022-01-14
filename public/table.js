@@ -6,8 +6,10 @@ class Table extends React.Component {
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handlePing = this.handlePing.bind(this);
+    this.handleOpponentUsername = this.handleOpponentUsername.bind(this);
 
     this.socket.on('ping', this.handlePing);
+    this.socket.on('opponentUsername', this.handleOpponentUsername);
 
     var paddleIndent = 15;
     this.state = {
@@ -17,7 +19,8 @@ class Table extends React.Component {
       rightLocationY: this.props.height/2,
       ballLocation: [this.props.width/2, this.props.height/2],
       leftScore: 0,
-      rightScore: 0
+      rightScore: 0,
+      opponentUsername: ''
     };
 
     this.moveRequest = 'none';
@@ -28,11 +31,23 @@ class Table extends React.Component {
       <table>
         <tbody>
           <tr>
-            <td>Score: {this.state.leftScore}</td>
-            <td style={{textAlign: "right"}}>Score: {this.state.rightScore}</td>
+            <td>
+              {this.props.side === 'left' ? this.props.username : this.state.opponentUsername}
+            </td>
+            <td style={{textAlign: 'right'}}>
+              {this.props.side === 'right' ? this.props.username : this.state.opponentUsername}
+            </td>
           </tr>
           <tr>
-            <td colSpan="2" style={{textAlign: "center"}}>
+            <td>
+              Score: {this.state.leftScore}
+            </td>
+            <td style={{textAlign: 'right'}}>
+              Score: {this.state.rightScore}
+            </td>
+          </tr>
+          <tr>
+            <td colSpan='2' style={{textAlign: 'center'}}>
               <canvas
                 ref='table'
                 tabIndex='1'
@@ -87,6 +102,15 @@ class Table extends React.Component {
     };
     socket.emit('pingResponse', JSON.stringify(pingResponse));
     this.moveRequest = 'none';
+  }
+
+  handleOpponentUsername(opponentUsername) {
+    this.setState((state) => {
+      return {
+        ...state,
+        opponentUsername: opponentUsername
+      };
+    });
   }
 
   updateCanvas() {
