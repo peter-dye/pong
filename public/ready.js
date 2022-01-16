@@ -5,20 +5,23 @@ class Ready extends React.Component {
 
     this.state = {
       ready: false,
-      disabled: true
+      disabled: true,
+      text: 'Ready?'
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleReady = this.handleReady.bind(this);
+    this.handleAgain = this.handleAgain.bind(this);
 
     socket.on('ready', this.handleReady);
+    socket.on('again', this.handleAgain);
   }
 
   render() {
     return (
       <form>
         <label>
-          Ready?
+          {this.state.text}
           <input
             disabled={this.state.disabled}
             type='checkbox'
@@ -49,6 +52,16 @@ class Ready extends React.Component {
       return {
         ...state,
         disabled: false
+      };
+    });
+  }
+
+  handleAgain() {
+    this.setState((state) => {
+      return {
+        ...state,
+        ready: false,
+        text: 'Again?'
       };
     });
   }

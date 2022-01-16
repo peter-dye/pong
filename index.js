@@ -99,6 +99,16 @@ io.on('connection', (socket) => {
     }
 
     if (leftReady && rightReady) {
+      gameData = {
+        ...gameData,
+        leftLocationY: tableHeight/2,
+        rightLocationY: tableHeight/2,
+        ballLocation: [tableWidth/2, tableHeight/2],
+        ballVelocity: [-ballVelocityMagnitude, 0],
+        leftScore: 0,
+        rightScore: 0,
+        pausingAfterGoal: false,
+      }
       startCountdown();
     }
   }
@@ -123,10 +133,12 @@ io.on('connection', (socket) => {
 
   async function startCountdown() {
     for (count = 3; count > 0; count--) {
-      socket.emit('countdown', count);
+      creatorSocket.emit('countdown', count);
+      joinerSocket.emit('countdown', count);
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
-    socket.emit('countdown', 0);
+    creatorSocket.emit('countdown', 0);
+    joinerSocket.emit('countdown', 0);
     startGameLoop();
   }
 
@@ -136,6 +148,11 @@ io.on('connection', (socket) => {
 
   function stopGameLoop() {
     clearInterval(gameLoopInterval);
+
+    leftReady = false;
+    rightReady = false;
+    creatorSocket.emit('again');
+    joinerSocket.emit('again');
   }
 
 
