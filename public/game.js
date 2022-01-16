@@ -34,6 +34,10 @@ class Game extends React.Component {
           height={150}
           side={this.state.side}
         />
+        <Ready
+          socket={this.socket}
+          side={this.state.side}
+        />
       </div>
     );
   }

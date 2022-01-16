@@ -3,15 +3,16 @@ class Table extends React.Component {
   constructor(props) {
     super(props);
     this.socket = props.socket;
-    this.maxScore = 11;
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handlePing = this.handlePing.bind(this);
     this.handleOpponentUsername = this.handleOpponentUsername.bind(this);
+    this.handleCountdown = this.handleCountdown.bind(this);
 
     this.socket.on('ping', this.handlePing);
     this.socket.on('opponentUsername', this.handleOpponentUsername);
+    this.socket.on('countdown', this.handleCountdown);
 
     var paddleIndent = 15;
     this.state = {
@@ -22,9 +23,11 @@ class Table extends React.Component {
       ballLocation: [this.props.width/2, this.props.height/2],
       leftScore: 0,
       rightScore: 0,
-      opponentUsername: ''
+      opponentUsername: '',
+      countdown: 0
     };
 
+    this.maxScore = 11;
     this.moveRequest = 'none';
   }
 
@@ -82,7 +85,7 @@ class Table extends React.Component {
     }
   }
 
-  handleKeyUp(e) {
+  handleKeyUp() {
     this.moveRequest = 'none';
   }
 
@@ -119,9 +122,20 @@ class Table extends React.Component {
     });
   }
 
+  handleCountdown(count) {
+    this.setState((state) => {
+        return {
+          ...state,
+          countdown: count
+        };
+      });
+  }
+
   updateCanvas() {
     const ctx = this.refs.table.getContext('2d');
     this.drawBackground(ctx);
+    this.drawCountdown(ctx); // Only does anything if applicable.
+    this.drawWinner(ctx); // Only does anything if applicable.
     this.drawPaddle(ctx, [this.state.leftLocationX, this.state.leftLocationY]);
     this.drawPaddle(ctx, [this.state.rightLocationX, this.state.rightLocationY]);
     this.drawBall(ctx, this.state.ballLocation);
@@ -163,9 +177,27 @@ class Table extends React.Component {
     ctx.moveTo(width/2, 0);
     ctx.lineTo(width/2, height);
     ctx.stroke();
+  }
 
-    // Draw the WINNER! text if applicable.
+  drawCountdown(ctx) {
+    let width = this.props.width;
+    let height = this.props.height;
+
+    if (this.state.countdown > 0) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 40px sans-serif';
+      ctx.fillStyle = 'rgb(0, 0, 0)'; // Black.
+      ctx.fillText(this.state.countdown, width/2, height/4);
+    }
+  }
+
+  drawWinner(ctx) {
+    let width = this.props.width;
+    let height = this.props.height;
+
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.font = 'bold 20px sans-serif';
     ctx.fillStyle = 'rgb(0, 0, 0)'; // Black.
     if (this.state.leftScore == this.maxScore) {

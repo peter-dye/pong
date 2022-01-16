@@ -29,6 +29,9 @@ io.on('connection', (socket) => {
   var creatorSocket;
   var joinerSocket;
 
+  var leftReady = false;
+  var rightReady = false;
+
   var gameLoopInterval;
   var lastSideToScore = 'none';
 
@@ -47,6 +50,7 @@ io.on('connection', (socket) => {
   socket.on('create', (username) => {
     creatorSocket = socket;
     creatorSocket.on('pingResponse', (response) => {handlePingResponse(response)});
+    creatorSocket.on('readyResponse', (response) => {handleReadyResponse(response)});
 
     gameCode = randomstring.generate(5).toUpperCase();
 
@@ -56,13 +60,16 @@ io.on('connection', (socket) => {
     function join(jUsername, jSocket) {
       joinerSocket = jSocket;
       joinerSocket.on('pingResponse', (response) => {handlePingResponse(response)});
+      joinerSocket.on('readyResponse', (response) => {handleReadyResponse(response)});
+
       gameData.rightName = jUsername;
 
       // Send username messages.
       creatorSocket.emit('opponentUsername', gameData.rightName);
       joinerSocket.emit('opponentUsername', gameData.leftName);
 
-      startGameLoop();
+      creatorSocket.emit('ready');
+      joinerSocket.emit('ready');
     }
 
     // Add the function for the joiner to join to the connection queue.
@@ -82,6 +89,20 @@ io.on('connection', (socket) => {
     join(message.username, socket);
   });
 
+  function handleReadyResponse(response) {
+    response = JSON.parse(response);
+
+    if (response.side == 'left') {
+      leftReady = response.ready;
+    } else if (response.side == 'right') {
+      rightReady = response.ready;
+    }
+
+    if (leftReady && rightReady) {
+      startCountdown();
+    }
+  }
+
   function handlePingResponse(response) {
     response = JSON.parse(response);
 
@@ -100,6 +121,14 @@ io.on('connection', (socket) => {
     }
   }
 
+  async function startCountdown() {
+    for (count = 3; count > 0; count--) {
+      socket.emit('countdown', count);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    socket.emit('countdown', 0);
+    startGameLoop();
+  }
 
   function startGameLoop() {
     gameLoopInterval = setInterval(sendPingSignal, 1000/30); // 30 frames per second.
