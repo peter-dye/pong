@@ -3,13 +3,13 @@ class Game extends React.Component {
     super(props);
     this.state = {
       username: '',
-      side: ''
+      side: '',
+      disableCreateAndJoin: true
     };
 
     this.socket = props.socket;
 
     this.onUsernameChange = this.onUsernameChange.bind(this);
-    this.onUsernameSubmit = this.onUsernameSubmit.bind(this);
     this.setSide = this.setSide.bind(this);
   }
 
@@ -25,6 +25,7 @@ class Game extends React.Component {
           socket={this.socket}
           username={this.state.username}
           setSide={this.setSide}
+          disable={this.state.disableCreateAndJoin}
         />
         <Table
           socket={this.socket}
@@ -39,12 +40,12 @@ class Game extends React.Component {
 
   onUsernameChange(username) {
     this.setState((state) => {
-      return {...state, username: username}
+      return {
+        ...state,
+        username: username,
+        disableCreateAndJoin: username === ''
+      }
     });
-  }
-
-  onUsernameSubmit() {
-    alert('Your username is ' + this.state.username);
   }
 
   setSide(side) {

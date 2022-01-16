@@ -11,11 +11,13 @@ class Connect extends React.Component {
           socket={this.socket}
           username={this.props.username}
           setSide={this.props.setSide}
+          disable={this.props.disable}
         />
         <JoinGame
           socket={this.socket}
           username={this.props.username}
           setSide={this.props.setSide}
+          disable={this.props.disable}
         />
       </div>
     );
@@ -28,7 +30,9 @@ class CreateGame extends React.Component {
     super(props);
     this.socket = props.socket;
 
-    this.state = {code: ''}
+    this.state = {
+      code: ''
+    }
 
     this.handleClick = this.handleClick.bind(this);
   }
@@ -36,7 +40,9 @@ class CreateGame extends React.Component {
   render() {
     return(
       <div>
-        <button onClick={this.handleClick}> Create </button>
+        <button onClick={this.handleClick} disabled={this.props.disable}>
+          Create
+        </button>
         <p> Your game code is {this.state.code} </p>
       </div>
     );
@@ -56,7 +62,10 @@ class JoinGame extends React.Component {
   constructor(props) {
     super(props);
     this.socket = props.socket;
-    this.state = {value: ''};
+    this.state = {
+      value: '',
+      emptyGameCode: true
+    };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -73,13 +82,20 @@ class JoinGame extends React.Component {
             onChange={this.handleChange}
           />
         </label>
-        <input type='submit' value='Join' />
+        <input
+          type='submit'
+          value='Join'
+          disabled={this.props.disable || this.state.emptyGameCode}
+        />
       </form>
     );
   }
 
   handleChange(event) {
-    this.setState({value: event.target.value});
+    this.setState({
+      value: event.target.value,
+      emptyGameCode: this.value === ''
+    });
   }
 
   handleSubmit(event) {
