@@ -30,6 +30,7 @@ io.on('connection', (socket) => {
   var joinerSocket;
 
   var gameLoopInterval;
+  var lastSideToScore = 'none';
 
   let gameData = {
     leftName: "",
@@ -110,6 +111,17 @@ io.on('connection', (socket) => {
 
 
   function unpause() {
+    // Reset the ball before unpausing the game updates.
+    if (lastSideToScore === 'left') {
+      gameData.ballLocation = [tableWidth/2 - ballVelocityMagnitude, tableHeight/2];
+      gameData.ballVelocity = [ballVelocityMagnitude, 0];
+      lastSideToScore = 'none';
+    } else if (lastSideToScore === 'right') {
+      gameData.ballLocation = [tableWidth/2 + ballVelocityMagnitude, tableHeight/2];
+      gameData.ballVelocity = [-ballVelocityMagnitude, 0];
+      lastSideToScore = 'none';
+    }
+
     gameData.pausingAfterGoal = false;
   }
 
@@ -133,6 +145,8 @@ io.on('connection', (socket) => {
 
 
   function updateGame() {
+    if (gameData.pausingAfterGoal) { return; }
+
     let ballLocation = gameData.ballLocation;
     let ballVelocity = gameData.ballVelocity;
 
@@ -156,26 +170,22 @@ io.on('connection', (socket) => {
     // Else if goal for left player.
     else if (leftGoal(ballLocation, ballVelocity)) {
       gameData.leftScore += 1;
-      ballLocation = [tableWidth/2 - ballVelocityMagnitude, tableHeight/2];
-      ballVelocity = [ballVelocityMagnitude, 0];
-
+      lastSideToScore = 'left';
       gameData.pausingAfterGoal = true;
       setTimeout(unpause, 1000);
     }
     // Else if goal for right player.
     else if (rightGoal(ballLocation, ballVelocity)) {
       gameData.rightScore += 1;
-      ballLocation = [tableWidth/2 + ballVelocityMagnitude, tableHeight/2];
-      ballVelocity = [-ballVelocityMagnitude, 0];
-
+      lastSideToScore = 'right';
       gameData.pausingAfterGoal = true;
       setTimeout(unpause, 1000);
     }
 
-    if (!gameData.pausingAfterGoal) {
-      ballLocation[0] = ballLocation[0] + ballVelocity[0];
-      ballLocation[1] = ballLocation[1] + ballVelocity[1];
-    }
+    if (gameData.pausingAfterGoal) { return; }
+
+    ballLocation[0] = ballLocation[0] + ballVelocity[0];
+    ballLocation[1] = ballLocation[1] + ballVelocity[1];
 
     gameData.ballLocation = ballLocation;
     gameData.ballVelocity = ballVelocity;
