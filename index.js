@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
     pausingAfterGoal: false,
   };
 
-  socket.on('create', async (username) => {
+  socket.on('create', (username) => {
     creatorSocket = socket;
     creatorSocket.on('pingResponse', (response) => {handlePingResponse(response)});
 
@@ -68,7 +68,7 @@ io.on('connection', (socket) => {
   });
 
 
-  socket.on('join', async (message) => {
+  socket.on('join', (message) => {
     message = JSON.parse(message);
 
     // Check that the game code exists.
@@ -102,7 +102,7 @@ io.on('connection', (socket) => {
   }
 
 
-  async function unpause() {
+  function unpause() {
     gameData.pausingAfterGoal = false;
   }
 
@@ -113,14 +113,14 @@ io.on('connection', (socket) => {
   }
 
 
-  async function sendPing() {
+  function sendPing() {
     let gameDataMessage = JSON.stringify(gameData);
     creatorSocket.emit('ping', gameDataMessage);
     joinerSocket.emit('ping', gameDataMessage);
   }
 
 
-  async function updateGame() {
+  function updateGame() {
     let ballLocation = gameData.ballLocation;
     let ballVelocity = gameData.ballVelocity;
 
