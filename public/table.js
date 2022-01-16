@@ -4,7 +4,8 @@ class Table extends React.Component {
     super(props);
     this.socket = props.socket;
 
-    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handlePing = this.handlePing.bind(this);
     this.handleOpponentUsername = this.handleOpponentUsername.bind(this);
 
@@ -51,7 +52,8 @@ class Table extends React.Component {
               <canvas
                 ref='table'
                 tabIndex='1'
-                onKeyPress={this.handleKeyPress}
+                onKeyDown={this.handleKeyDown}
+                onKeyUp= {this.handleKeyUp}
                 width={this.props.width}
                 height={this.props.height}
               >
@@ -71,12 +73,16 @@ class Table extends React.Component {
     this.updateCanvas();
   }
 
-  handleKeyPress(e) {
+  handleKeyDown(e) {
     if (e.key == 'w') {
       this.moveRequest = 'up';
     } else if (e.key == 's') {
       this.moveRequest = 'down';
     }
+  }
+
+  handleKeyUp(e) {
+    this.moveRequest = 'none';
   }
 
   handlePing(message) {
@@ -101,7 +107,6 @@ class Table extends React.Component {
       moveRequest: this.moveRequest
     };
     socket.emit('pingResponse', JSON.stringify(pingResponse));
-    this.moveRequest = 'none';
   }
 
   handleOpponentUsername(opponentUsername) {
