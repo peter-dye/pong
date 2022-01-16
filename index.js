@@ -14,6 +14,7 @@ const paddleWidth = 6;
 const paddleHeight = 30;
 const tableWidth = 300;
 const tableHeight = 150;
+const maxScore = 11;
 
 app.use(express.static('public'));
 
@@ -27,6 +28,8 @@ io.on('connection', (socket) => {
 
   var creatorSocket;
   var joinerSocket;
+
+  var gameLoopInterval;
 
   let gameData = {
     leftName: "",
@@ -98,7 +101,11 @@ io.on('connection', (socket) => {
 
 
   function startGameLoop() {
-    interval = setInterval(sendPingSignal, 1000/30); // 30 frames per second.
+    gameLoopInterval = setInterval(sendPingSignal, 1000/30); // 30 frames per second.
+  }
+
+  function stopGameLoop() {
+    clearInterval(gameLoopInterval);
   }
 
 
@@ -109,6 +116,11 @@ io.on('connection', (socket) => {
 
   function sendPingSignal () {
     updateGame();
+
+    if (gameData.rightScore == maxScore || gameData.leftScore == maxScore) {
+      stopGameLoop();
+    }
+
     sendPing();
   }
 

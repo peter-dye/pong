@@ -3,6 +3,7 @@ class Table extends React.Component {
   constructor(props) {
     super(props);
     this.socket = props.socket;
+    this.maxScore = 11;
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -130,9 +131,24 @@ class Table extends React.Component {
     let width = this.props.width;
     let height = this.props.height;
 
-    ctx.fillStyle = 'rgb(102, 153, 255)';
-    ctx.fillRect(0, 0, width, height);
+    // Draw the background on each side. Color depends on winner/loser.
+    if (this.state.rightScore < this.maxScore && this.state.leftScore < this.maxScore) {
+      ctx.fillStyle = 'rgb(102, 153, 255)'; // Blue.
+      ctx.fillRect(0, 0, width/2, height);
+      ctx.fillRect(width/2, 0, width/2, height);
+    } else if (this.state.leftScore == this.maxScore) {
+      ctx.fillStyle = 'rgb(128, 255, 128)'; // Green.
+      ctx.fillRect(0, 0, width/2, height);
+      ctx.fillStyle = 'rgb(255, 128, 128)'; // Red.
+      ctx.fillRect(width/2, 0, width/2, height);
+    } else if (this.state.rightScore == this.maxScore) {
+      ctx.fillStyle = 'rgb(255, 128, 128)'; // Red.
+      ctx.fillRect(0, 0, width/2, height);
+      ctx.fillStyle = 'rgb(128, 255, 128)'; // Green.
+      ctx.fillRect(width/2, 0, width/2, height);
+    }
 
+    // Draw the lines on the board.
     ctx.strokeStyle = 'white';
     ctx.lineWidth = '10';
     ctx.strokeRect(0, 0, width, height);
@@ -147,6 +163,16 @@ class Table extends React.Component {
     ctx.moveTo(width/2, 0);
     ctx.lineTo(width/2, height);
     ctx.stroke();
+
+    // Draw the WINNER! text if applicable.
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = 'rgb(0, 0, 0)'; // Black.
+    if (this.state.leftScore == this.maxScore) {
+      ctx.fillText('WINNER!', width/4, height/2);
+    } else if (this.state.rightScore == this.maxScore) {
+      ctx.fillText('WINNER!', 3 * (width/4), height/2);
+    }
   }
 
   drawPaddle(ctx, center) {
