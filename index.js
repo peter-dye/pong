@@ -83,9 +83,11 @@ io.on('connection', (socket) => {
     message = JSON.parse(message);
 
     // Check that the game code exists.
+    if (!(message.gameCode in connectionQueue)) { return; }
 
     // Use the gameCode the get the join function.
     var join = connectionQueue[message.gameCode];
+    delete connectionQueue[message.gameCode];
     join(message.username, socket);
   });
 
