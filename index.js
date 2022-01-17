@@ -99,6 +99,7 @@ io.on('connection', (socket) => {
     }
 
     if (leftReady && rightReady) {
+      // Reset the gameData in case this is not the first game.
       gameData = {
         ...gameData,
         leftLocationY: tableHeight/2,
@@ -108,7 +109,11 @@ io.on('connection', (socket) => {
         leftScore: 0,
         rightScore: 0,
         pausingAfterGoal: false,
-      }
+      };
+
+      // Send ping to reset the table.
+      sendPing();
+
       startCountdown();
     }
   }
