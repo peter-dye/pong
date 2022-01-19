@@ -33,39 +33,41 @@ class Table extends React.Component {
 
   render() {
     return (
-      <table>
-        <tbody>
-          <tr>
-            <td>
-              {this.props.side === 'left' ? this.props.username : this.state.opponentUsername}
-            </td>
-            <td style={{textAlign: 'right'}}>
-              {this.props.side === 'right' ? this.props.username : this.state.opponentUsername}
-            </td>
-          </tr>
-          <tr>
-            <td>
-              Score: {this.state.leftScore}
-            </td>
-            <td style={{textAlign: 'right'}}>
-              Score: {this.state.rightScore}
-            </td>
-          </tr>
-          <tr>
-            <td colSpan='2' style={{textAlign: 'center'}}>
-              <canvas
-                ref='table'
-                tabIndex='1'
-                onKeyDown={this.handleKeyDown}
-                onKeyUp= {this.handleKeyUp}
-                width={this.props.width}
-                height={this.props.height}
-              >
-              </canvas>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <td>
+                {this.props.side === 'left' ? this.props.username : this.state.opponentUsername}
+              </td>
+              <td style={{textAlign: 'right'}}>
+                {this.props.side === 'right' ? this.props.username : this.state.opponentUsername}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Score: {this.state.leftScore}
+              </td>
+              <td style={{textAlign: 'right'}}>
+                Score: {this.state.rightScore}
+              </td>
+            </tr>
+            <tr>
+              <td colSpan='2' style={{textAlign: 'center'}}>
+                <canvas
+                  ref='table'
+                  tabIndex='1'
+                  onKeyDown={this.handleKeyDown}
+                  onKeyUp= {this.handleKeyUp}
+                  width={this.props.width}
+                  height={this.props.height}
+                >
+                </canvas>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     );
   }
 
