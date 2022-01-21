@@ -46,8 +46,7 @@ class Ready extends React.Component {
       };
     });
 
-    let response = {side: this.props.side, ready: ready};
-    this.socket.emit('readyResponse', JSON.stringify(response));
+    this.socket.emit('readyResponse', ready);
   }
 
   handleReady() {

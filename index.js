@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
   socket.on('create', (username) => {
     creatorSocket = socket;
     creatorSocket.on('pingResponse', (response) => {handleLeftPingResponse(response)});
-    creatorSocket.on('readyResponse', (response) => {handleReadyResponse(response)});
+    creatorSocket.on('readyResponse', (response) => {handleLeftReadyResponse(response)});
 
     gameCode = randomstring.generate(5).toUpperCase();
 
@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
     function join(jUsername, jSocket) {
       joinerSocket = jSocket;
       joinerSocket.on('pingResponse', (response) => {handleRightPingResponse(response)});
-      joinerSocket.on('readyResponse', (response) => {handleReadyResponse(response)});
+      joinerSocket.on('readyResponse', (response) => {handleRightReadyResponse(response)});
 
       gameData.rightName = jUsername;
 
@@ -91,15 +91,17 @@ io.on('connection', (socket) => {
     join(message.username, socket);
   });
 
-  function handleReadyResponse(response) {
-    response = JSON.parse(response);
+  function handleLeftReadyResponse(ready) {
+    leftReady = ready;
+    handleReadyResponseShared();
+  }
 
-    if (response.side == 'left') {
-      leftReady = response.ready;
-    } else if (response.side == 'right') {
-      rightReady = response.ready;
-    }
+  function handleRightReadyResponse(ready) {
+    rightReady = ready;
+    handleReadyResponseShared();
+  }
 
+  function handleReadyResponseShared() {
     if (leftReady && rightReady) {
       // Reset the gameData in case this is not the first game.
       gameData = {
