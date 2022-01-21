@@ -107,12 +107,8 @@ class Table extends React.Component {
       };
     });
 
-    // send a ping response with the move request
-    var pingResponse = {
-      side: this.props.side,
-      moveRequest: this.moveRequest
-    };
-    socket.emit('pingResponse', JSON.stringify(pingResponse));
+    // Send a ping response containing the move request.
+    socket.emit('pingResponse', this.moveRequest);
   }
 
   handleOpponentUsername(opponentUsername) {

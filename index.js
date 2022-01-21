@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
 
   socket.on('create', (username) => {
     creatorSocket = socket;
-    creatorSocket.on('pingResponse', (response) => {handlePingResponse(response)});
+    creatorSocket.on('pingResponse', (response) => {handleLeftPingResponse(response)});
     creatorSocket.on('readyResponse', (response) => {handleReadyResponse(response)});
 
     gameCode = randomstring.generate(5).toUpperCase();
@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
     // Define a function for the joiner to use to join.
     function join(jUsername, jSocket) {
       joinerSocket = jSocket;
-      joinerSocket.on('pingResponse', (response) => {handlePingResponse(response)});
+      joinerSocket.on('pingResponse', (response) => {handleRightPingResponse(response)});
       joinerSocket.on('readyResponse', (response) => {handleReadyResponse(response)});
 
       gameData.rightName = jUsername;
@@ -120,21 +120,27 @@ io.on('connection', (socket) => {
     }
   }
 
-  function handlePingResponse(response) {
-    response = JSON.parse(response);
+  function handleLeftPingResponse(moveRequest) {
+    if (moveRequest === 'up') {
+      gameData.leftLocationY = Math.max(
+        gameData.leftLocationY - paddleVelocity,
+        0);
+    } else if (moveRequest === 'down') {
+      gameData.leftLocationY = Math.min(
+        gameData.leftLocationY + paddleVelocity,
+        tableHeight);
+    }
+  }
 
-    if (response.side === 'left') {
-      if (response.moveRequest === 'up') {
-        gameData.leftLocationY = gameData.leftLocationY - paddleVelocity;
-      } else if (response.moveRequest === 'down') {
-        gameData.leftLocationY = gameData.leftLocationY + paddleVelocity;
-      }
-    } else if (response.side === 'right') {
-      if (response.moveRequest === 'up') {
-        gameData.rightLocationY = gameData.rightLocationY - paddleVelocity;
-      } else if (response.moveRequest === 'down') {
-        gameData.rightLocationY = gameData.rightLocationY + paddleVelocity;
-      }
+  function handleRightPingResponse(moveRequest) {
+    if (moveRequest == 'up') {
+      gameData.rightLocationY = Math.max(
+        gameData.rightLocationY - paddleVelocity,
+        0);
+    } else if (moveRequest == 'down') {
+      gameData.rightLocationY = Math.min(
+        gameData.rightLocationY + paddleVelocity,
+        tableHeight);
     }
   }
 
