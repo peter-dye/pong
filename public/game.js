@@ -15,7 +15,7 @@ class Game extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className='Game'>
         <Username
           username={this.state.username}
           onChange={this.onUsernameChange}

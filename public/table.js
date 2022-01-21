@@ -33,7 +33,7 @@ class Table extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className='Table'>
         <table>
           <tbody>
             <tr>

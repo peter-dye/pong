@@ -13,35 +13,39 @@ class Connect extends React.Component {
   render() {
     if (this.state.gameCreated) {
       return (
-        <div className='clearfix'>
-          <CreateGame
-            socket={this.socket}
-            username={this.props.username}
-            setSide={this.props.setSide}
-            disable={this.props.disable}
-            gameCreated={this.state.gameCreated}
-            handleGameCreatedChange={this.handleGameCreatedChange}
-          />
+        <div className='Connect'>
+          <div className='clearfix'>
+            <CreateGame
+              socket={this.socket}
+              username={this.props.username}
+              setSide={this.props.setSide}
+              disable={this.props.disable}
+              gameCreated={this.state.gameCreated}
+              handleGameCreatedChange={this.handleGameCreatedChange}
+            />
+          </div>
         </div>
       );
     } else {
       return (
-        <div className='clearfix'>
-          <CreateGame
-            socket={this.socket}
-            username={this.props.username}
-            setSide={this.props.setSide}
-            disable={this.props.disable}
-            gameCreated={this.state.gameCreated}
-            handleGameCreatedChange={this.handleGameCreatedChange}
-          />
-          <p className='ConnectOr'> or </p>
-          <JoinGame
-            socket={this.socket}
-            username={this.props.username}
-            setSide={this.props.setSide}
-            disable={this.props.disable}
-          />
+        <div className='Connect'>
+          <div className='clearfix'>
+            <CreateGame
+              socket={this.socket}
+              username={this.props.username}
+              setSide={this.props.setSide}
+              disable={this.props.disable}
+              gameCreated={this.state.gameCreated}
+              handleGameCreatedChange={this.handleGameCreatedChange}
+            />
+            <p className='ConnectOr'> or </p>
+            <JoinGame
+              socket={this.socket}
+              username={this.props.username}
+              setSide={this.props.setSide}
+              disable={this.props.disable}
+            />
+          </div>
         </div>
       );
     }
@@ -120,6 +124,7 @@ class JoinGame extends React.Component {
             type='submit'
             value='Join a game'
             disabled={this.props.disable || this.state.emptyGameCode}
+            className='JoinGameButtonInput'
           />
           <label>
             with game code:
@@ -127,6 +132,7 @@ class JoinGame extends React.Component {
               type='text'
               value={this.state.value}
               onChange={this.handleChange}
+              className='JoinGameCodeInput'
             />
           </label>
         </form>

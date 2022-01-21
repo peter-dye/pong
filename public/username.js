@@ -7,16 +7,19 @@ class Username extends React.Component {
 
   render() {
     return (
-      <form>
-        <label>
-          Username:
-          <input
-            type='text'
-            value={this.props.username}
-            onChange={this.handleChange}
-          />
-        </label>
-      </form>
+      <div className='Username'>
+        <form>
+          <label>
+            Username:
+            <input
+              type='text'
+              value={this.props.username}
+              onChange={this.handleChange}
+              className='UsernameInput'
+            />
+          </label>
+        </form>
+      </div>
     );
   }
 

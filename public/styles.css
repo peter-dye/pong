@@ -5,12 +5,37 @@
 }
 
 body {
-  background-color: gray;
+  background-color: dimgrey;
+  color: white;
 }
 
 canvas {
   border: 1px solid #d3d3d3;
   background-color: #f1f1f1;
+}
+
+.Title {
+  text-align: center;
+  color: black;
+}
+
+.Game {
+
+}
+
+.Username {
+  display: flex;
+  justify-content: center;
+}
+
+.UsernameInput {
+  margin-left: 10px;
+}
+
+.Connect {
+  display: flex;
+  justify-content: center;
+  margin: 20px;
 }
 
 .CreateGame {
@@ -19,8 +44,34 @@ canvas {
 
 .ConnectOr {
   float: left;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .JoinGame {
   float: left;
+}
+
+.JoinGameButtonInput {
+  margin-right: 10px;
+}
+
+.JoinGameCodeInput {
+  margin-left: 10px;
+}
+
+.Table {
+  display: flex;
+  justify-content: center;
+}
+
+.Ready {
+  display: flex;
+  justify-content: center;
+}
+
+.ReadyCheckbox {
+  margin-left: 10px;
 }

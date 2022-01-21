@@ -19,17 +19,20 @@ class Ready extends React.Component {
 
   render() {
     return (
-      <form>
-        <label>
-          {this.state.text}
-          <input
-            disabled={this.state.disabled}
-            type='checkbox'
-            checked={this.state.ready}
-            onChange={this.handleChange}
-          />
-        </label>
-      </form>
+      <div className='Ready'>
+        <form>
+          <label>
+            {this.state.text}
+            <input
+              disabled={this.state.disabled}
+              type='checkbox'
+              checked={this.state.ready}
+              onChange={this.handleChange}
+              className='ReadyCheckbox'
+            />
+          </label>
+        </form>
+      </div>
     );
   }
 
