@@ -32,6 +32,9 @@ io.on('connection', (socket) => {
   var leftReady = false;
   var rightReady = false;
 
+  var leftPingBacklog = 0;
+  var rightPingBacklog = 0;
+
   var gameLoopInterval;
   var lastSideToScore = 'none';
 
@@ -136,6 +139,8 @@ io.on('connection', (socket) => {
         gameData.leftLocationY + paddleVelocity,
         tableHeight);
     }
+
+    leftPingBacklog -= 1;
   }
 
   function handleRightPingResponse(moveRequest) {
@@ -148,6 +153,8 @@ io.on('connection', (socket) => {
         gameData.rightLocationY + paddleVelocity,
         tableHeight);
     }
+
+    rightPingBacklog -= 1;
   }
 
   async function startCountdown() {
@@ -198,7 +205,11 @@ io.on('connection', (socket) => {
       stopGameLoop();
     }
 
-    sendPing();
+    if (leftPingBacklog > 10 || rightPingBacklog > 10) {
+      stopGameLoop();
+    } else {
+      sendPing();      
+    }
   }
 
 
@@ -206,6 +217,9 @@ io.on('connection', (socket) => {
     let gameDataMessage = JSON.stringify(gameData);
     creatorSocket.emit('ping', gameDataMessage);
     joinerSocket.emit('ping', gameDataMessage);
+
+    leftPingBacklog += 1;
+    rightPingBacklog += 1;
   }
 
 
