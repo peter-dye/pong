@@ -159,12 +159,17 @@ io.on('connection', (socket) => {
 
   async function startCountdown() {
     for (count = 3; count > 0; count--) {
+      if (!leftReady || !rightReady) { continue; }
+
       creatorSocket.emit('countdown', count);
       joinerSocket.emit('countdown', count);
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
+
     creatorSocket.emit('countdown', 0);
     joinerSocket.emit('countdown', 0);
+
+    if (!leftReady || !rightReady) { return; }
     startGameLoop();
   }
 
@@ -208,7 +213,7 @@ io.on('connection', (socket) => {
     if (leftPingBacklog > 10 || rightPingBacklog > 10) {
       stopGameLoop();
     } else {
-      sendPing();      
+      sendPing();
     }
   }
 
