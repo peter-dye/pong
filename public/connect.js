@@ -2,16 +2,10 @@ class Connect extends React.Component {
   constructor(props) {
     super(props);
     this.socket = props.socket;
-
-    this.state = {
-      gameCreated: false
-    };
-
-    this.handleGameCreatedChange = this.handleGameCreatedChange.bind(this);
   }
 
   render() {
-    if (this.state.gameCreated) {
+    if (this.props.gameCreated) {
       return (
         <div className='Connect'>
           <div className='clearfix'>
@@ -20,8 +14,8 @@ class Connect extends React.Component {
               username={this.props.username}
               setSide={this.props.setSide}
               disable={this.props.disable}
-              gameCreated={this.state.gameCreated}
-              handleGameCreatedChange={this.handleGameCreatedChange}
+              gameCreated={this.props.gameCreated}
+              handleGameCreatedChange={this.props.handleGameCreatedChange}
             />
           </div>
         </div>
@@ -35,8 +29,8 @@ class Connect extends React.Component {
               username={this.props.username}
               setSide={this.props.setSide}
               disable={this.props.disable}
-              gameCreated={this.state.gameCreated}
-              handleGameCreatedChange={this.handleGameCreatedChange}
+              gameCreated={this.props.gameCreated}
+              handleGameCreatedChange={this.props.handleGameCreatedChange}
             />
             <p className='ConnectOr'> or </p>
             <JoinGame
@@ -44,20 +38,12 @@ class Connect extends React.Component {
               username={this.props.username}
               setSide={this.props.setSide}
               disable={this.props.disable}
+              handleGameJoinedChange={this.props.handleGameJoinedChange}
             />
           </div>
         </div>
       );
     }
-  }
-
-  handleGameCreatedChange(created) {
-    this.setState((state) => {
-      return {
-        ...state,
-        gameCreated: created
-      };
-    });
   }
 }
 
@@ -114,6 +100,9 @@ class JoinGame extends React.Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleJoinSuccess = this.handleJoinSuccess.bind(this);
+
+    socket.on('joinSuccess', (success) => this.handleJoinSuccess(success));
   }
 
   render() {
@@ -132,6 +121,7 @@ class JoinGame extends React.Component {
               type='text'
               value={this.state.value}
               onChange={this.handleChange}
+              disabled={this.props.disable}
               className='JoinGameCodeInput'
             />
           </label>
@@ -153,7 +143,13 @@ class JoinGame extends React.Component {
       username: this.props.username
     };
     socket.emit('join', JSON.stringify(joinMessage));
-    this.props.setSide('right');
     event.preventDefault();
+  }
+
+  handleJoinSuccess(success) {
+    if (success) {
+      this.props.setSide('right');
+      this.props.handleGameJoinedChange(true);
+    }
   }
 }

@@ -15,6 +15,7 @@ class Username extends React.Component {
               type='text'
               value={this.props.username}
               onChange={this.handleChange}
+              disabled={this.props.disable}
               className='UsernameInput'
             />
           </label>

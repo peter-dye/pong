@@ -59,6 +59,7 @@ io.on('connection', (socket) => {
     // Define a function for the joiner to use to join.
     function join(jUsername, jSocket) {
       joinerSocket = jSocket;
+      joinerSocket.emit('joinSuccess', true);
       joinerSocket.on('pingResponse', (response) => {handleRightPingResponse(response)});
       joinerSocket.on('readyResponse', (response) => {handleRightReadyResponse(response)});
 
@@ -83,9 +84,12 @@ io.on('connection', (socket) => {
     message = JSON.parse(message);
 
     // Check that the game code exists.
-    if (!(message.gameCode in connectionQueue)) { return; }
+    if (!(message.gameCode in connectionQueue)) {
+      socket.emit('joinSuccess', false);
+      return;
+    }
 
-    // Use the gameCode the get the join function.
+    // Use the gameCode to get the join function.
     var join = connectionQueue[message.gameCode];
     delete connectionQueue[message.gameCode];
     join(message.username, socket);

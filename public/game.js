@@ -4,13 +4,17 @@ class Game extends React.Component {
     this.state = {
       username: '',
       side: '',
-      disableCreateAndJoin: true
+      disableCreateAndJoin: true,
+      gameCreated: false,
+      gameJoined: false
     };
 
     this.socket = props.socket;
 
     this.onUsernameChange = this.onUsernameChange.bind(this);
     this.setSide = this.setSide.bind(this);
+    this.handleGameCreatedChange = this.handleGameCreatedChange.bind(this);
+    this.handleGameJoinedChange = this.handleGameJoinedChange.bind(this);
   }
 
   render() {
@@ -19,13 +23,16 @@ class Game extends React.Component {
         <Username
           username={this.state.username}
           onChange={this.onUsernameChange}
-          onSubmit={this.onUsernameSubmit}
+          disable={this.state.gameCreated || this.state.gameJoined}
         />
         <Connect
           socket={this.socket}
           username={this.state.username}
           setSide={this.setSide}
           disable={this.state.disableCreateAndJoin}
+          gameCreated={this.state.gameCreated}
+          handleGameCreatedChange={this.handleGameCreatedChange}
+          handleGameJoinedChange={this.handleGameJoinedChange}
         />
         <Table
           socket={this.socket}
@@ -55,6 +62,25 @@ class Game extends React.Component {
   setSide(side) {
     this.setState((state) => {
       return {...state, side: side}
+    });
+  }
+
+  handleGameCreatedChange(created) {
+    this.setState((state) => {
+      return {
+        ...state,
+        gameCreated: created
+      };
+    });
+  }
+
+  handleGameJoinedChange(joined) {
+    this.setState((state) =>{
+      return {
+        ...state,
+        gameJoined: joined,
+        disableCreateAndJoin: joined
+      };
     });
   }
 }
