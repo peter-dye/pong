@@ -37,8 +37,8 @@ class Game extends React.Component {
         <Table
           socket={this.socket}
           username={this.state.username}
-          width={300}
-          height={150}
+          width={600}
+          height={300}
           side={this.state.side}
         />
         <Ready

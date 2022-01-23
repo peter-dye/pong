@@ -6,14 +6,14 @@ const { Server } = require('socket.io');
 const io = new Server(server);
 const randomstring = require('randomstring');
 
-const paddleVelocity = 2;
-const ballVelocityMagnitude = 3;
+const paddleVelocity = 5;
+const ballVelocityMagnitude = 7;
 const ballRadius = 3;
 const paddleIndent = 15;
 const paddleWidth = 6;
-const paddleHeight = 30;
-const tableWidth = 300;
-const tableHeight = 150;
+const paddleHeight = 50;
+const tableWidth = 600;
+const tableHeight = 300;
 const maxScore = 11;
 
 app.use(express.static('public'));
@@ -277,15 +277,25 @@ io.on('connection', (socket) => {
 });
 
 function contactingLeftPaddle(paddleLocation, ballLocation, ballVelocity) {
-  return ballLocation[0] < (paddleIndent + paddleWidth/2 + ballRadius)
-    && ballLocation[0] > paddleIndent
+  // Required so the ball does not clip through the paddle.
+  let clippingDifference = ballVelocityMagnitude - (paddleWidth/2 + ballRadius);
+
+  let paddleContactRange = paddleIndent + paddleWidth/2 + ballRadius + clippingDifference;
+
+  return ballLocation[0] < (paddleContactRange)
+    && ballLocation[0] >= paddleIndent
     && Math.abs(ballLocation[1] - paddleLocation) < (paddleHeight/2)
     && ballVelocity[0] < 0;
 }
 
 function contactingRightPaddle(paddleLocation, ballLocation, ballVelocity) {
-  return ballLocation[0] > (tableWidth - (paddleIndent + paddleWidth/2 + ballRadius))
-    && ballLocation[0] < (tableWidth - paddleIndent)
+  // Required so the ball does not clip through the paddle.
+  let clippingDifference = ballVelocityMagnitude - (paddleWidth/2 + ballRadius);
+
+  let paddleContactRange = paddleIndent + paddleWidth/2 + ballRadius + clippingDifference;
+
+  return ballLocation[0] > (tableWidth - (paddleContactRange))
+    && ballLocation[0] <= (tableWidth - paddleIndent)
     && Math.abs(ballLocation[1] - paddleLocation) < (paddleHeight/2)
     && ballVelocity[0] > 0;
 }

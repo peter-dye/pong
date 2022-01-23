@@ -207,7 +207,7 @@ class Table extends React.Component {
 
   drawPaddle(ctx, center) {
     let paddleWidth = 6;
-    let paddleHeight = 30;
+    let paddleHeight = 50;
 
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(
