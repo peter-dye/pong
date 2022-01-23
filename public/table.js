@@ -80,9 +80,9 @@ class Table extends React.Component {
   }
 
   handleKeyDown(e) {
-    if (e.key == 'w') {
+    if (e.key == 'w' || e.keyCode == 38) {
       this.moveRequest = 'up';
-    } else if (e.key == 's') {
+    } else if (e.key == 's' || e.keyCode == 40) {
       this.moveRequest = 'down';
     }
   }
