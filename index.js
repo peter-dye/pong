@@ -22,8 +22,6 @@ app.use(express.static('public'));
 var connectionQueue = {};
 
 io.on('connection', (socket) => {
-  console.log('New player connected.');
-
   var gameCode;
 
   var creatorSocket;
