@@ -1,3 +1,12 @@
+if (process.argv.length == 3 && process.argv[2] == '--debug') {
+  var PORT = 3000;
+} else if (process.argv.length == 3 && process.argv[2] == '--release') {
+  var PORT = 80;
+} else {
+  console.log("No valid build argument given. Use command 'node pongServer.js --debug' or 'node pongServer.js --release'")
+  return;
+}
+
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -338,6 +347,6 @@ function degToRad(deg) {
     return deg * (Math.PI / 180.0);
 }
 
-server.listen(3000, () => {
-  console.log('Listening on *:3000');
+server.listen(PORT, () => {
+  console.log(`Listening on *:${PORT}`);
 });
