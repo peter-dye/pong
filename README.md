@@ -55,7 +55,7 @@ First, get setup with Azure and make sure you have a subscription that has eithe
 Login to the Azure Portal from a web browser.
 
 Next, create a virtual machine resource and name it whatever you like.
-On the `Basics` tab, the important options and their settings are:
+On the Basics tab, the important options and their settings are:
 - `Region`: Pick something physically close to you.
 - `Image`: Ubuntu Server 20.04 LTS - Gen2.
 - `Size`: Standard_B1ls. This is the smallest/cheapest size available. You can use a larger size if you want but it is probably not needed.
@@ -65,13 +65,13 @@ On the `Basics` tab, the important options and their settings are:
 - `Public inbound ports`: Allow selected ports.
 - `Select inbound ports`: Check SSH and HTTP.
 
-On the disks tab:
+On the Disks tab:
 - `OS disk type`: Standard SSD. A premium SSD won't make a difference here since a game runs only in memory.
 
-On the management tab:
+On the Management tab:
 - `Enable auto-shutdown`: Uncheck this to turn it off.
 
-At this point you can to the create and review tab and create the virtual machine.
+At this point you can to the Create and Review tab and create the virtual machine.
 When you press the create option, you will be prompted to download the private key.
 Download this and save it to a safe location, if you loose it, you will not be able to SSH into your virtual machine.
 
@@ -86,7 +86,7 @@ Now we need to re-associate this IP with the network interface so navigate back 
 Select `Associate` and then select the IP address that we just changed from the dropdown.
 Save the change and the virtual machine should be completely configured!
 
-Connect to your virtual machine using SSH and provide the private key that was downloaded earlier to authenticate yourself.
+Now we will connect to your virtual machine using SSH and provide the private key that was downloaded earlier to authenticate yourself.
 Fist, you need to change the permissions on the private key file.
 To do this, use the command `sudo chmod 600 /path/to/private_key.cer`.
 Then the SSH command is `ssh -i /path/to/private_key.cer username@IP_Address` where you replace `/path/to/private_key.cer`, `username`, and `IP_Address` with the values from your setup.
