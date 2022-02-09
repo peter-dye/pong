@@ -6,7 +6,7 @@ Online multiplayer implementation of the classic arcade game pong.
 [How to Run pong on Azure](#how-to-run-pong-on-azure)
 
 This project is built with React.js on the front end, Node.js on the back end, and runs on Azure.
-You can find it [here](20.151.202.31)(*).
+You can find it [here](http://20.151.202.31)(*).
 This project also uses Express.js to serve the content and Socket.io for real-time communication.
 
 I built this project with the goal of learning how to implement an online multiplayer game.
@@ -40,7 +40,7 @@ To do this, navigate to the cloned folder and run the command `npm install`.
 Now you should be able to run the project with the command `node pongServer.js --debug`.
 The `--debug` option uses port 3000 to listen for connections.
 
-In a browser window, navigate to [localhost:3000](localhost:3000), or if you want to run it on a different port, change the `PORT` variable in `pongServer.js` and replace the `3000` with whatever port number you choose.
+In a browser window, navigate to [localhost:3000](http://localhost:3000), or if you want to run it on a different port, change the `PORT` variable in `pongServer.js` and replace the `3000` with whatever port number you choose.
 
 You can open two browser windows and play against yourself by switching between them to test the game.
 
